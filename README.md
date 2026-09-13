@@ -25,7 +25,7 @@ TypeScript + React + Vite + Three.js + React Three Fiber，使用 pnpm 管理依
 
 Three.js 渲染小镇，React 组织网页内容，React Three Fiber 将场景组织成可复用组件。首版采用纯前端单应用，没有运行时后端或数据库。
 
-详见 [架构方案](docs/architecture.md) 与 [昼夜方案](docs/day-cycle.md)。
+详见 [架构方案](docs/architecture.md)、[昼夜方案](docs/day-cycle.md) 与 [素材制作与管理](assets/README.md)。
 
 ## 下一里程碑
 

@@ -4,6 +4,8 @@
 
 Will Town is an explorable Three.js pixel town for an independent developer, with products represented as shops. Use a small, close street view before expanding into a district. Keep warm windows and legible shop entrances. The first real product is https://berryon.ai. Will's character has short black hair, blue goggles and a black shirt.
 
+Visual quality is the first acceptance criterion. The user rejected the initial floating slab and coarse repeated building shells. Ground must read as continuous solid land with substantial stone retaining walls, connected steps and terrain below. Use the original concept and Octopath Traveler screenshots to guide real architectural depth, detailed roof silhouettes, recessed windows, shop displays, shadows and atmospheric depth. Working animation does not compensate for weak visuals.
+
 Use browser local time for an approximate sunny day cycle; do not add location permissions, weather services, rain or snow. Support direct HTML product access alongside optional keyboard/touch exploration. Keep source prompts and asset provenance separate from runtime assets. The public repository is Howell5/will-town; do not publish the original personal reference attachment.
 
 Run the local server yourself and open the preview in the browser available to this environment. Do not give the user server-start instructions when you can run it.

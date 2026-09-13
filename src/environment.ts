@@ -14,7 +14,7 @@ const keys = [
   { m: 420, daylight: 1.1, ambient: 1.15, windows: .25, tint: '#b8cddd', sunlight: '#ffdbc2', backdrop: .94 },
   { m: 720, daylight: 2.1, ambient: 1.4, windows: .12, tint: '#c8e1ed', sunlight: '#fff0d6', backdrop: 1.22 },
   { m: 960, daylight: 1.6, ambient: 1.2, windows: .25, tint: '#c7bdc4', sunlight: '#ffd6a1', backdrop: 1.0 },
-  { m: 1110, daylight: .85, ambient: .85, windows: .85, tint: '#66628c', sunlight: '#ffaf70', backdrop: .69 },
+  { m: 1110, daylight: .85, ambient: .85, windows: .85, tint: '#283663', sunlight: '#ffad71', backdrop: .46 },
   { m: 1200, daylight: 0, ambient: .65, windows: 1, tint: '#29365e', sunlight: '#b3c9ff', backdrop: .36 },
   { m: 1440, daylight: 0, ambient: .65, windows: 1, tint: '#29365e', sunlight: '#b3c9ff', backdrop: .36 },
 ]

@@ -13,7 +13,9 @@
 
 - `public/assets/sprites/will-walk.png`：按用户提供的风格化形象生成，短发、蓝色护目镜、黑色上衣；源记录见 `assets/source/avatar/README.md`。
 - `public/assets/sprites/greenery.png`：生成的四种植物，源记录见 `assets/source/materials/greenery.md`。
-- `public/assets/textures/town-materials.png`：生成材质图集，源记录见 `assets/source/materials/town-materials.md`。
+- `public/assets/textures/town-materials.png`：首版生成材质图集，重做版不再加载，保留作为来源记录；见 `assets/source/materials/town-materials.md`。
+- `public/assets/textures/shop-interiors.png`：三个橱窗的室内陈设插画，置于真实窗框后方。
+- `public/assets/textures/material-surfaces.png`：应用于独立石块与弧形瓦片的表面纹理。以上两项的原始提示词和检查记录见 `assets/source/materials/visual-rebuild.md`。
 - `public/assets/backgrounds/distant-town.png`：生成像素远景，源记录见 `assets/source/backdrop/provenance.md`。
 
 这些生成图片未被标记为 CC0。原始用户头像未复制到公开仓库。

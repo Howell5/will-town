@@ -29,3 +29,5 @@
 @media(min-width:761px){.introduction h1{text-shadow:1px 0 currentColor,-1px 0 currentColor,0 1px currentColor,0 -1px currentColor,2px 3px #17294c}.intro-copy{margin-bottom:20px}.introduction .primary-button{padding-top:10px;padding-bottom:10px}.intro-actions{gap:12px}}
 
 .shop-peek{display:flex;flex-direction:column;gap:6px;width:207px;padding:12px 15px;border:2px solid #8db3b5;border-radius:3px;background:#102737f5;box-shadow:3px 3px 0 #162939a0;text-align:left;color:#ecf4df;font-size:16px;white-space:nowrap}.shop-peek strong{color:#a2e3cb;font-size:21px;letter-spacing:1px}.shop-peek small{color:#f6d48c;font-size:14px}.shop-peek:hover{background:#203d44;color:#fff}.shop-sign{display:flex;justify-content:center;align-items:center;gap:10px;font-family:Georgia,serif;font-weight:900;font-size:32px;letter-spacing:1px}.shop-sign svg{height:36px;width:36px}.header .brand{font-weight:700;text-shadow:1px 0 currentColor}.header{background:#102148f5}
+/* The dusk panorama needs luminance as well as hue when previewing daylight. */
+.is-day .sky-tint{mix-blend-mode:screen;opacity:.76}

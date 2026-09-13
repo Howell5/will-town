@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { useLoader } from '@react-three/fiber'
 import { BookOpen, GearSix, Camera } from '@phosphor-icons/react'
-import { Html } from '@react-three/drei'
+import { Billboard, Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { shops, type ShopId } from './content'
 import { environmentAt } from './environment'
@@ -14,9 +14,11 @@ const shade = (base: string, seed: number, range = .18) => new THREE.Color(base)
 
 function chamferedCube() {
   const s = new THREE.Shape()
-  s.moveTo(-.46, -.46); s.lineTo(.46, -.46); s.lineTo(.46, .46); s.lineTo(-.46, .46); s.closePath()
-  const g = new THREE.ExtrudeGeometry(s, { depth: .92, bevelEnabled: true, bevelThickness: .04, bevelSize: .04, bevelSegments: 1, steps: 1 })
-  g.translate(0, 0, -.46)
+  // A dressed stone with uneven shoulders; bevels catch light at scene scale.
+  s.moveTo(-.42,-.38); s.lineTo(-.31,-.43); s.lineTo(.33,-.42); s.lineTo(.43,-.33)
+  s.lineTo(.40,.34); s.lineTo(.29,.42); s.lineTo(-.32,.43); s.lineTo(-.43,.32); s.closePath()
+  const g = new THREE.ExtrudeGeometry(s, { depth: .84, bevelEnabled: true, bevelThickness: .08, bevelSize: .065, bevelSegments: 1, steps: 1 })
+  g.translate(0, 0, -.42)
   g.computeVertexNormals()
   const positions = g.getAttribute('position'), normals = g.getAttribute('normal'), uv: number[] = []
   for (let i = 0; i < positions.count; i++) {
@@ -27,7 +29,7 @@ function chamferedCube() {
   return g
 }
 
-function roofTile() {
+function roofTile(ridge = false) {
   const shape = new THREE.Shape()
   for (let i = 0; i <= 8; i++) {
     const a = Math.PI * i / 8, x = Math.cos(a) * .48, y = Math.sin(a) * .45
@@ -40,51 +42,51 @@ function roofTile() {
   shape.closePath()
   const geometry = new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false, steps: 1 })
   geometry.translate(0, 0, -.5)
-  geometry.rotateY(Math.PI / 2)
+  if (!ridge) geometry.rotateY(Math.PI / 2)
   const positions = geometry.getAttribute('position'), uv: number[] = []
   for (let i = 0; i < positions.count; i++) uv.push(positions.getX(i) + .5, positions.getZ(i) + .5)
   geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2))
   return geometry
 }
 
-function StoneMaterial({ tile = false }: { tile?: boolean }) {
+function SurfaceMaterial({ kind = 'stone', color = '#ffffff' }: { kind?: 'stone' | 'clay' | 'wood'; color?: string }) {
   const source = useLoader(THREE.TextureLoader, '/assets/textures/material-surfaces.png')
   const map = useMemo(() => {
-    const t = source.clone(); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false
-    t.repeat.set(.492, .492); t.offset.set(tile ? .504 : .004, .504); t.needsUpdate = true; return t
-  }, [source, tile])
-  return <meshStandardMaterial map={map} roughness={.9} onBeforeCompile={shader => {
-    shader.vertexShader = 'varying vec3 stonePosition;\n' + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nstonePosition=position;')
-    shader.fragmentShader = 'varying vec3 stonePosition;\n' + shader.fragmentShader.replace('#include <map_fragment>', `
+    const t = source.clone(); t.colorSpace = THREE.SRGBColorSpace
+    t.magFilter = THREE.NearestFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true
+    t.repeat.set(.482,.482); t.offset.set(kind==='stone'?.009:.509,kind==='wood'?.009:.509); t.needsUpdate=true
+    return t
+  },[source,kind])
+  return <meshStandardMaterial color={color} map={map} bumpMap={map} bumpScale={kind==='clay'?.023:kind==='wood'?.016:.033} roughness={kind==='clay'?.72:kind==='wood'?.84:.94} onBeforeCompile={shader=>{
+    shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`
       vec4 surfaceColor=texture2D(map,vMapUv);
-      diffuseColor.rgb*=mix(vec3(1.),surfaceColor.rgb,.55);
-    `).replace('#include <color_fragment>', `#include <color_fragment>
-      vec3 grainCell=floor(stonePosition*38.);
-      float grainValue=fract(sin(dot(grainCell,vec3(12.9898,78.233,37.719)))*43758.5453);
-      diffuseColor.rgb*=.91+grainValue*.16;
+      diffuseColor.rgb*=mix(vec3(1.),surfaceColor.rgb,${kind==='wood'?'.56':'.32'});
     `)
-  }} />
+  }} customProgramCacheKey={()=>kind} />
 }
 
 // Repeated real stones and tiles share geometry and draw calls, but retain depth and bevels.
-function Blocks({ items, bevel = true, tiles = false }: { items: Block[]; bevel?: boolean; tiles?: boolean }) {
+function Blocks({ items, bevel = true, tiles = false, ridge = false }: { items: Block[]; bevel?: boolean; tiles?: boolean; ridge?: boolean }) {
   const mesh = useRef<THREE.InstancedMesh>(null)
-  const geometry = useMemo(() => tiles ? roofTile() : bevel ? chamferedCube() : new THREE.BoxGeometry(), [bevel, tiles])
+  const geometry = useMemo(() => tiles ? roofTile(ridge) : bevel ? chamferedCube() : new THREE.BoxGeometry(), [bevel, tiles, ridge])
   useLayoutEffect(() => {
     const object = new THREE.Object3D(), color = new THREE.Color()
     items.forEach((b, i) => {
-      object.position.set(...b.p); object.scale.set(...b.s); object.rotation.set(...(b.r ?? [0, 0, 0])); object.updateMatrix()
+      object.position.set(...b.p)
+      object.scale.set(b.s[0]*(.97+grain(i*3)*.06),b.s[1]*(.96+grain(i*7)*.08),b.s[2])
+      object.rotation.set(...(b.r ?? [0,0,0])); if(!tiles) object.rotation.z+=(grain(i*11)-.5)*.016
+      object.updateMatrix()
       mesh.current!.setMatrixAt(i, object.matrix); mesh.current!.setColorAt(i, color.set(b.c))
     })
     mesh.current!.instanceMatrix.needsUpdate = true
     if (mesh.current!.instanceColor) mesh.current!.instanceColor.needsUpdate = true
     mesh.current!.computeBoundingSphere()
   }, [items])
-  return <instancedMesh ref={mesh} args={[geometry, undefined, items.length]} castShadow receiveShadow><StoneMaterial tile={tiles} /></instancedMesh>
+  return <instancedMesh ref={mesh} args={[geometry, undefined, items.length]} castShadow receiveShadow><SurfaceMaterial kind={tiles?'clay':'stone'} /></instancedMesh>
 }
 
-export function Solid({ p, s, c = '#8a7964', r, emission = 0, unlit = false }: { p: V3; s: V3; c?: string; r?: V3; emission?: number; unlit?: boolean }) {
-  return <mesh position={p} rotation={r} castShadow receiveShadow><boxGeometry args={s} />{unlit ? <meshBasicMaterial color={c} /> : <meshStandardMaterial color={c} roughness={.83} emissive={c} emissiveIntensity={emission} />}</mesh>
+export function Solid({ p, s, c = '#8a7964', r, emission = 0, unlit = false, wood = false }: { p: V3; s: V3; c?: string; r?: V3; emission?: number; unlit?: boolean; wood?: boolean }) {
+  return <mesh position={p} rotation={r} castShadow receiveShadow><boxGeometry args={s} />{wood ? <SurfaceMaterial kind="wood" color={c} /> : unlit ? <meshBasicMaterial color={c} /> : <meshStandardMaterial color={c} roughness={.83} emissive={c} emissiveIntensity={emission} />}</mesh>
 }
 
 export function Greenery({ position, size = .7, kind = 0 }: { position: V3; size?: number; kind?: number }) {
@@ -95,7 +97,8 @@ export function Greenery({ position, size = .7, kind = 0 }: { position: V3; size
     t.repeat.set(.5, top ? 560 / 1254 : 694 / 1254); t.offset.set((kind % 2) * .5, top ? 694 / 1254 : 0); t.needsUpdate = true
     return t
   }, [source, kind])
-  return <sprite position={position} scale={[size * 1.55, size * (kind === 1 ? .9 : 1.6), 1]} center={[.5, .055]}><spriteMaterial map={texture} color="#ffffff" alphaTest={.2} transparent /></sprite>
+  const h=size*(kind===1?.9:1.6),w=size*1.55
+  return <group position={position}><Billboard follow lockX lockZ><mesh position={[0,h*.445,0]} castShadow={kind<3} receiveShadow><planeGeometry args={[w,h]}/><meshStandardMaterial map={texture} emissiveMap={texture} emissive="#8da579" emissiveIntensity={.035} alphaTest={.45} side={THREE.DoubleSide} roughness={1}/></mesh></Billboard></group>
 }
 
 export function Lantern({ position, env, wall = false }: { position: V3; env: Env; wall?: boolean }) {
@@ -104,11 +107,16 @@ export function Lantern({ position, env, wall = false }: { position: V3; env: En
     {!wall && <><Solid p={[0, h / 2, 0]} s={[.07, h, .07]} c="#273441" /><Solid p={[0, .12, 0]} s={[.32, .24, .32]} c="#59616a" /><Solid p={[0, .3, 0]} s={[.16, .28, .16]} c="#38434a" /></>}
     {!wall && [h-.45,h-.33,.48,.62].map(y=><mesh key={y} position={[0,y,0]} castShadow><cylinderGeometry args={[.09,.11,.06,8]}/><meshStandardMaterial color="#242d39" metalness={.35} roughness={.5}/></mesh>)}
     {wall && <><Solid p={[0, h + .38, -.24]} s={[.075, .075, .68]} c="#343744" /><Solid p={[0, h + .1, -.53]} s={[.15, .7, .08]} c="#353440" /></>}
-    <Solid p={[0, h, 0]} s={[.27, .45, .27]} c="#ffbf65" emission={.3 + env.windows * .9} />
-    {[-1, 1].flatMap(x => [-1, 1].map(z => <Solid key={`${x}${z}`} p={[x * .145, h, z * .145]} s={[.045, .52, .045]} c="#303543" unlit />))}
-    <mesh position={[0, h + .37, 0]} rotation={[0, Math.PI / 4, 0]} castShadow><coneGeometry args={[.32, .25, 4]} /><meshBasicMaterial color="#323e4c" /></mesh>
-    <Solid p={[0, h + .23, 0]} s={[.41, .05, .41]} c="#5b5960" unlit /><Solid p={[0, h - .25, 0]} s={[.37, .07, .37]} c="#4a4445" unlit />
-    <pointLight position={[0, h - .4, .45]} color="#ffad48" intensity={env.windows * (wall ? 5 : 18)} distance={5} decay={1.5} />
+    <mesh position={[0,h,0]} rotation={[0,Math.PI/4,0]}>
+      <cylinderGeometry args={[.285,.20,.57,4]}/><meshStandardMaterial color="#efb44d" emissive="#ffb32e" emissiveIntensity={.08+env.windows*.20} transparent opacity={.62} depthWrite={false} roughness={.3}/>
+    </mesh>
+    <mesh position={[0,h-.02,.025]}><sphereGeometry args={[.105,8,6]}/><meshStandardMaterial color="#fff2be" emissive="#ffdf8c" emissiveIntensity={.5+env.windows*3}/></mesh>
+    {[-1,1].flatMap(x=>[-1,1].map(z=><Solid key={`${x}-${z}`} p={[x*.17,h,z*.17]} s={[.035,.63,.035]} r={[z*.09,0,-x*.09]} c="#242c34" unlit/>))}
+    <mesh position={[0,h+.40,0]} rotation={[0,Math.PI/4,0]} castShadow><coneGeometry args={[.42,.26,4]}/><meshStandardMaterial color="#34383b" metalness={.45} roughness={.65}/></mesh>
+    <Solid p={[0,h+.28,0]} s={[.52,.065,.52]} c="#37352d" unlit/><Solid p={[0,h-.31,0]} s={[.36,.07,.36]} c="#303638" unlit/>
+    <mesh position={[0,h+.59,0]} castShadow><sphereGeometry args={[.061,6,5]}/><meshStandardMaterial color="#444337" metalness={.5} roughness={.6}/></mesh>
+    <Solid p={[0,h+.52,0]} s={[.035,.16,.035]} c="#303638" unlit/>
+    <pointLight position={[0, h - .4, .45]} color="#ffad48" intensity={env.windows * (wall ? 4 : 13)} distance={5} decay={1.5} />
   </group>
 }
 
@@ -124,7 +132,7 @@ function Interior({ index, p, size, env }: { index: number; p: V3; size: [number
 function RecessedWindow({ x, y, z, w, h, index, env, upper = false }: { x: number; y: number; z: number; w: number; h: number; index: number; env: Env; upper?: boolean }) {
   return <group position={[x, y, z]}>
     <Solid p={[0, 0, -.18]} s={[w + .18, h + .18, .14]} c="#2d2426" />
-    {upper ? <mesh position={[0,0,-.09]}><planeGeometry args={[w,h]}/><meshStandardMaterial color="#ffce68" emissive="#ffad32" emissiveIntensity={.25+env.windows*1.25} roughness={.5}/></mesh> : <Interior index={index} p={[0, 0, -.09]} size={[w, h]} env={env} />}
+    {upper ? <UpperRoom w={w} h={h} env={env} /> : <Interior index={index} p={[0, 0, -.09]} size={[w, h]} env={env} />}
     {[-1, 1].map(d => <Solid key={d} p={[d * (w / 2 + .045), 0, .06]} s={[.1, h + .22, .28]} c={upper ? '#b9a282' : '#6a4e37'} />)}
     {[-1, 1].map(d => <Solid key={d} p={[0, d * (h / 2 + .04), .06]} s={[w + .2, .095, .28]} c={upper ? '#bea47e' : '#785039'} />)}
     <Solid p={[0, 0, .07]} s={[.045, h, .09]} c="#594134" />
@@ -138,24 +146,25 @@ function RecessedWindow({ x, y, z, w, h, index, env, upper = false }: { x: numbe
 }
 
 function Roof({ height, index }: { height: number; index: number }) {
-  const tiles = useMemo(() => {
-    const out: Block[] = [], colors = ['#a55239', '#ad593d', '#9a4938']
-    for (const side of [-1, 1]) for (let row = 0; row < 6; row++) for (let col = 0; col < 10; col++) {
-      const t = row / 5, x = side * (.11 + t * 1.64), y = height + 1.13 - t * 1.13
-      out.push({ p: [x, y, -1.40 + col * .35 + (row % 2) * .04], s: [.44, .21, .36], r: [0, 0, -side * .60], c: shade(colors[index], row * 63 + col * 29 + side, .36) })
+  const { tiles, ridge } = useMemo(()=>{
+    const tiles:Block[]=[],ridge:Block[]=[]
+    const palette=['#bd6847','#b96040','#b76d53','#c48159','#904732','#a94e36']
+    for(const side of [-1,1])for(let row=0;row<8;row++)for(let col=0;col<10;col++){
+      const x=side*(.10+row*.235), z=-1.38+col*.35
+      tiles.push({p:[x,height+1.16-row*.161+(grain(row*17+col)-.5)*.035,z],s:[.365,.39,.35],r:[0,(grain(col*19+row)-.5)*.024,-side*.60],c:palette[Math.floor(grain(row*13+col*7+index*83+side)*palette.length)]})
     }
-    for (let j = 0; j < 15; j++) out.push({ p: [0, height + 1.19, -1.58 + j * .24], s: [.35, .24, .29], c: shade('#c0744b', j, .3) })
-    return out
-  }, [height, index])
+    for(let i=0;i<10;i++)ridge.push({p:[0,height+1.22,-1.39+i*.35],s:[.43,.39,.41],c:shade('#c27a51',i+index*20,.35)})
+    return {tiles,ridge}
+  },[height,index])
   return <>
-    <Solid p={[-.84, height + .54, .1]} s={[2.12, .13, 3.45]} r={[0, 0, .60]} c="#493a39" />
-    <Solid p={[.84, height + .54, .1]} s={[2.12, .13, 3.45]} r={[0, 0, -.60]} c="#493a39" />
-    <Blocks items={tiles} tiles />
-    <Blocks items={[-1,1].flatMap(side=>Array.from({length:8},(_,i)=>({p:[side*(.11+i*.23),height+1.14-i*.157,1.85] as V3,s:[.29,.24,.34] as V3,r:[0,0,-side*.60] as V3,c:shade('#bf7048',i+side*9,.22)})))} />
+    <Solid p={[-.84,height+.47,.1]} s={[2.12,.11,3.45]} r={[0,0,.60]} c="#493127" wood />
+    <Solid p={[.84,height+.47,.1]} s={[2.12,.11,3.45]} r={[0,0,-.60]} c="#493127" wood />
+    <Blocks items={tiles} tiles /><Blocks items={ridge} tiles ridge />
+    {[-1,1].flatMap(side=>Array.from({length:5},(_,i)=><Solid key={`${side}-${i}`} p={[side*(.28+i*.31),height+.94-i*.21,1.64]} s={[.10,.17,.48]} r={[0,0,-side*.60]} c="#795039" wood />))}
   </>
 }
 
-export function Shop({ index, env, onOpen }: { index: number; env: Env; onOpen: (id: ShopId) => void }) {
+export function Shop({ index, env, onOpen, mobile }: { index: number; env: Env; mobile: boolean; onOpen: (id: ShopId) => void }) {
   const shop = shops[index], height = [4.7, 5.0, 5.05][index], front = 1.42
   const signY = [3.30, 3.72, 3.92][index], awningY = signY - .52
   const wallColor = ['#758d79', '#c1a47c', '#b59c8e'][index]
@@ -168,7 +177,7 @@ export function Shop({ index, env, onOpen }: { index: number; env: Env; onOpen: 
       if (x > 1.65 || y > gableTop) continue
       const lowerHole = y < awningY-.22 && y > .12 && (Math.abs(x - .86) < .49 || Math.abs(x + .65) < .77)
       const upperHole = Math.abs(y - (height - .60)) < .62 && Math.abs(x) < .43
-      if (!lowerHole && !upperHole) list.push({ p:[x,y,front],s:[.265,.16,.18+grain(row+col)*.025], c:shade(wallColor,row*49+col,.16) })
+      if (!lowerHole && !upperHole) list.push({ p:[x,y+(grain(row*49+col)-.5)*.018,front+(grain(row*19+col)-.5)*.025],s:[.266,.158,.19+grain(row+col)*.055], c:shade(wallColor,row*49+col,.30) })
     }
     for(let row=0;row<31;row++) for(let col=0;col<9;col++) {
       const y=.1+row*.18;if(y>height)continue
@@ -203,21 +212,22 @@ export function Shop({ index, env, onOpen }: { index: number; env: Env; onOpen: 
     </group>
     <RecessedWindow x={-.65} y={displayY} z={front+.13} w={1.33} h={displayH} index={index} env={env} />
     <RecessedWindow x={.91} y={displayY} z={front+.13} w={.71} h={displayH} index={index} env={env} />
-    <Solid p={[.91,.40,front+.27]} s={[.72,.61,.11]} c={['#695b35','#785733','#85634f'][index]} />
+    <Solid p={[.91,.40,front+.27]} s={[.72,.61,.11]} c={['#695b35','#785733','#85634f'][index]} wood />
     {[-.22,.22].map(x=><Solid key={x} p={[.91+x,.40,front+.34]} s={[.026,.48,.025]} c="#b8955d" />)}
     <Solid p={[.61,1.0,front+.35]} s={[.06,.16,.07]} c="#edc275" />
     <Solid p={[.91,.035,front+.40]} s={[1.10,.10,.64]} c="#c7bd9d" />
-    <pointLight position={[.3,1.5,front+.85]} intensity={env.windows*13} distance={5} decay={1.5} color="#ffb04b" />
+    <pointLight position={[.3,1.5,front+.85]} intensity={env.windows*4.5} distance={5} decay={1.5} color="#ffb04b" />
     <Lantern position={[1.46,1.26,front+.45]} env={env} wall />
     <Greenery position={[-1.50,.05,front+.60]} size={.87} />
     <Greenery position={[1.50,.03,front+.76]} size={.76} />
     {[-1.67,1.66].map((x,i)=><group key={x}><Greenery position={[x,.8,front+.35]} size={2.0} kind={3} /><Greenery position={[x,2.55+i*.28,front+.20]} size={1.72} kind={3} /><Greenery position={[x,4.20,front-.03]} size={1.20} kind={3} /></group>)}
     <group position={[index===0?-1.95:1.20,.03,2.67]} rotation={[0,-.10,0]}>
-      <Solid p={[0,.55,0]} s={[.79,1.02,.10]} c="#916b42" r={[-.14,0,0]} /><Solid p={[0,.60,.07]} s={[.64,.83,.06]} c="#253542" r={[-.14,0,0]} />
-      <Solid p={[0,.35,-.30]} s={[.65,.70,.06]} c="#785332" r={[.32,0,0]} />
+      <Solid p={[0,.55,0]} s={[.79,1.02,.10]} c="#916b42" wood r={[-.14,0,0]} /><Solid p={[0,.60,.07]} s={[.64,.83,.06]} c="#253542" r={[-.14,0,0]} />
+      <Solid p={[0,.35,-.30]} s={[.65,.70,.06]} c="#785332" wood r={[.32,0,0]} />
       <Html transform position={[0,.62,.17]} distanceFactor={4} zIndexRange={[15,0]}><span className="chalk-icon" aria-hidden="true">{index===0?<BookOpen weight="duotone"/>:index===1?<GearSix weight="fill"/>:<Camera weight="fill"/>}</span></Html>
     </group>
-    <pointLight position={[0,.7,front+1.5]} intensity={env.windows*18} distance={4.5} decay={2} color="#ffad36" />
+    <WindowSpill front={front} env={env} shadows={!mobile && index===1} />
+    <pointLight position={[0,.7,front+1.5]} intensity={env.windows*6.5} distance={4.5} decay={2} color="#ffad36" />
     <mesh position={[0,1.3,front+.39]} onClick={e=>{e.stopPropagation();onOpen(shop.id)}}><planeGeometry args={[2.8,2.3]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} /></mesh>
   </group></group>
 }
@@ -229,12 +239,12 @@ export function Terrain({ env, onWalk }: { env: Env; onWalk: (p: THREE.Vector3) 
     for (let row = 0; row < 49; row++) for (let col = 0; col < 43; col++) {
       const x = -7.5 + col * .40 + (row % 2) * .20, z = -2.5 + row * .36
       if(z > streetEdge(x)-.18) continue
-      list.push({ p: [x, -.055 + grain(row * 13 + col) * .025, z], s: [.37, .14, .32], c: shade('#8a8e87', row * 345 + col * 71, .40), r: [0, (grain(row * 8 + col) - .5) * .08, 0] })
+      list.push({ p: [x, -.055 + grain(row * 13 + col) * .025, z], s: [.37, .18, .32], c: shade('#969588', row * 345 + col * 71, .40), r: [0, (grain(row * 8 + col) - .5) * .08, 0] })
     }
     // Massive coursed retaining wall continues down below the viewport, with buttresses.
     for (let row = 0; row < 13; row++) for (let col = 0; col < 24; col++) {
       const x = -7.55 + col * .73 + row % 2 * .36
-      list.push({ p: [x, -.30 - row * .37, streetEdge(x)], s: [.78, .33, .48], r:[0,-Math.atan(.5),0], c: shade('#6c727b', row * 159 + col, .35) })
+      list.push({ p: [x, -.30 - row * .37, streetEdge(x)], s: [.78, .33, .48], r:[0,-Math.atan(.5),0], c: shade(['#737d84','#838578','#68777e','#908d7c'][col%4], row * 159 + col, .27) })
     }
     // Lower street joins the descending staircase and runs off the image edge.
     for(let row=0;row<11;row++) for(let col=0;col<36;col++) list.push({p:[-9+col*.54,-2.70,10.1+row*.45],s:[.50,.15,.41],c:shade('#646c76',row*145+col,.3)})
@@ -266,8 +276,8 @@ export function Terrain({ env, onWalk }: { env: Env; onWalk: (p: THREE.Vector3) 
     {[-7.6,-5.0,-2.7,4.7,7.5].map((x,i)=><Greenery key={x} position={[x,-1.7-(i%2)*.35,streetEdge(x)+.7]} size={1.75} kind={3} />)}
     {[-8,-5.1,4.8,7.3].map(x=><Greenery key={x} position={[x,.13,streetEdge(x)-.1]} size={.85} kind={1} />)}
     <group position={[-1.3,.08,8.3]}>
-      {[0,1,2,3].map(i=><Solid key={i} p={[0,.43,-.22+i*.15]} s={[1.65,.075,.12]} c="#8b6945" />)}
-      {[0,1,2].map(i=><Solid key={i} p={[0,.69+i*.14,-.29]} s={[1.65,.11,.07]} c="#8c724e" />)}
+      {[0,1,2,3].map(i=><Solid key={i} p={[0,.43,-.22+i*.15]} s={[1.65,.075,.12]} c="#8b6945" wood />)}
+      {[0,1,2].map(i=><Solid key={i} p={[0,.69+i*.14,-.29]} s={[1.65,.11,.07]} c="#8c724e" wood />)}
       {[-.65,.65].map(x=><Solid key={x} p={[x,.28,0]} s={[.08,.55,.48]} c="#343d40" />)}
     </group>
     <BoundaryWall />
@@ -289,4 +299,22 @@ const streetEdge=(x:number)=>9.64+.5*(x-.7)
 function GroundMass(){
  const shape=useMemo(()=>new THREE.Shape([new THREE.Vector2(-7.8,-2.9),new THREE.Vector2(9.2,-2.9),new THREE.Vector2(9.2,streetEdge(9.2)),new THREE.Vector2(-7.8,streetEdge(-7.8))]),[])
  return <mesh rotation={[Math.PI/2,0,0]} position={[0,-.13,0]} receiveShadow><extrudeGeometry args={[shape,{depth:8.4,bevelEnabled:false,steps:1}]}/><meshStandardMaterial color="#4e5963" roughness={1}/></mesh>
+}
+
+function WindowSpill({front,env,shadows}:{front:number;env:Env;shadows:boolean}){
+ const target=useMemo(()=>{const o=new THREE.Object3D();o.position.set(0,0,front+3.1);return o},[front])
+ return <><primitive object={target}/><spotLight position={[0,2.5,front+.85]} target={target} color="#ffc068" intensity={env.windows*44} distance={7} angle={.69} penumbra={.7} decay={2} castShadow={shadows} shadow-mapSize={[1024,1024]} shadow-bias={-.0001} shadow-normalBias={.012} shadow-camera-near={.15} shadow-camera-far={8}/></>
+}
+
+function UpperRoom({w,h,env}:{w:number;h:number;env:Env}){
+ return <group position={[0,0,-.09]}>
+   <mesh><planeGeometry args={[w,h]}/><meshStandardMaterial color="#b57236" emissive="#ffba51" emissiveIntensity={.12+env.windows*.65} roughness={1}/></mesh>
+   <Solid p={[0,-h*.35,.035]} s={[w,.045,.11]} c="#64432b" wood/>
+   {[-.26,-.18,-.10].map((x,i)=><Solid key={x} p={[x,-h*.22,.025]} s={[.058,.22+i*.033,.055]} c={['#725139','#c09553','#6c7661'][i]}/>)}
+   <Solid p={[w*.22,-h*.19,.06]} s={[.016,.27,.015]} c="#6b442b"/>
+   <mesh position={[w*.22,-h*.04,.06]}><coneGeometry args={[w*.145,h*.17,6,1,true]}/><meshStandardMaterial color="#ffe2a0" emissive="#ffcd62" emissiveIntensity={env.windows*1.7} side={THREE.DoubleSide}/></mesh>
+   {[-1,1].map(side=><group key={side} position={[side*w*.44,0,.08]}>
+    {[0,1,2].map(i=><mesh key={i} position={[(i-1)*.026,0,0]}><cylinderGeometry args={[.018,.027,h*.96,5]}/><meshStandardMaterial color={side<0?'#c99551':'#966035'} roughness={1}/></mesh>)}
+   </group>)}
+ </group>
 }

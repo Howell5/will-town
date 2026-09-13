@@ -4,6 +4,34 @@ final result: blocked
 
 Blocker: overall art fidelity remains below the user's requested near-identical reference. Camera anchor checks pass; they are not a 90% similarity score. This revision is a saved calibration milestone, not a completed design handoff.
 
+## Material and lighting follow-up
+
+The latest request scopes this revision to roof/wood, stone and lighting quality. Overall reference fidelity remains blocked; the following concrete material improvements have been implemented and verified.
+
+- Latest actual desktop capture: `docs/qa/material-lighting-desktop.png`, 1487 × 1058, 18:30, initial pose, ego-lite. Prior baseline: `docs/qa/reference-camera-desktop.png`.
+- Detail: `docs/qa/material-lighting-detail.png`, native browser capture of CSS rectangle (780,300,625,650), 1250 × 1300 pixels at native 2× capture density. It is a browser crop, not a generated mock or bitmap enhancement. Used to inspect tile overlaps, masonry edges, windows and lamp housing.
+- Additional real captures: `docs/qa/material-lighting-noon.png` (1487 × 1058); `docs/qa/material-lighting-mobile-night.png` (390 × 844, emulated viewport). Source, final desktop and detail were opened together for comparison.
+
+### Changes and observed results
+
+1. Fine high-frequency random shader grain was removed. The existing generated atlas now provides filtered color and shallow bump relief with separate stone, clay and wood settings. Actual stone geometry has uneven dressed corners and larger bevels, with restrained size/color variation. Pavers and masonry now have more visible individual edges, although they remain more regular/stylized than the reference.
+2. Roof tile courses now overlap with raised barrel profiles; ridge pieces have their own axial orientation. Dark timber supports sit below the eaves. Roof relief is clearer than the prior nearly continuous fine-grained surface; handmade ridge and tile-end fidelity still differs from the source.
+3. Broad near-white facade/floor illumination was reduced. A warm spot from each storefront produces localized spill; the middle shop has a shadow map. Nearby stone/wood crevices receive low-radius screen-space occlusion. The pass explicitly uses orthographic depth, excludes billboards/hit planes and retains transparent scene coverage.
+4. The opaque town is static; AO is cached until camera/projection/viewport changes. Moving character and alpha-cut plants are excluded from the normal pass. Any future animated opaque geometry must invalidate or disable this cache. Mobile omits AO and shadow maps.
+5. Plants use alpha-cut upright planes so selected pots can cast light-dependent shadows. Lamp glass is tapered around a distinct bright core, with metal struts/caps/finial. Upper rooms now have curtains, books, a shelf and a small lamp instead of a flat bright panel.
+6. The first noon check exposed dark text over an intrinsically dark panorama. Daytime now increases sky luminance, not only hue, restoring readable dark text. Capture was repeated after the sky transition completed.
+
+### Scoped fidelity and runtime check
+
+- Fonts and copy: unchanged from the previous reference-camera revision, including existing full-reference font differences.
+- Layout: camera file and camera tests unchanged; all shop anchor coordinates retained exactly. No change to storefront arrangement, street boundary or headline placement.
+- Colors: daylight, dusk and mobile night inspected; warm window/core light remains separated from the cool surrounding masonry.
+- Image quality: no new raster assets generated this iteration; existing texture provenance preserved. Geometry/material/shadow changes are visible in the live WebGL screenshot. Whole-reference modeling differences remain open.
+- Desktop keyboard + E opened Berryon with correct `https://berryon.ai/`; Escape and reset worked. Mobile touch movement + E opened the same product; no horizontal overflow.
+- Reload capture: no console errors, uncaught errors or unhandled rejections; scene ready true.
+- Warmed 90-frame desktop RAF sample, after dropping 16 settling frames: mean 34.63 ms, maximum 51.5 ms. This is one local browser sample (~29 fps), not a universal device/FPS guarantee.
+- Typecheck, 9 tests (including fixed camera checks), build and 4 Sites packaging tests passed. Existing large-chunk warning remains.
+
 ## Evidence and normalization
 
 - Source: `docs/references/town-concept.png`, the same selected image reattached by the user, 1487 × 1058.

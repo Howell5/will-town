@@ -77,13 +77,13 @@ function Scene(props: Props) {
   const env = environmentAt(props.minutes)
   useEffect(() => { props.onReady() }, [props.onReady])
   return <>
-    <ambientLight color="#a0b3e3" intensity={env.ambient * .85} />
-    <hemisphereLight args={['#849acb', '#464153', .3]} />
+    <ambientLight color="#a0b3e3" intensity={env.ambient * .63} />
+    <hemisphereLight args={['#849acb', '#393b51', .23]} />
     <directionalLight position={[-Math.cos(env.sunAngle) * 10, Math.max(2, Math.sin(env.sunAngle) * 12), 6]} color={env.sunlight} intensity={env.daylight} castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-12} shadow-camera-right={12} shadow-camera-top={10} shadow-camera-bottom={-8} shadow-normalBias={.025} shadow-bias={-.0001} />
-    <directionalLight position={[-6, 12, 10]} color="#f4c491" intensity={.60 + env.daylight * .3} />
-    <directionalLight position={[0, 8, -7]} color="#638ee7" intensity={.85} />
+    <directionalLight position={[-6, 12, 10]} color="#f4c491" intensity={.30 + env.daylight * .3} />
+    <directionalLight position={[0, 8, -7]} color="#8aa3ff" intensity={1.1} />
     <Terrain env={env} onWalk={point => { props.runtime.target = { x: Math.max(-7, Math.min(8, point.x)), z: Math.max(1.65, Math.min(8.9, point.z)) }; props.onExplore() }} />
-    {shops.map((shop, index) => <Shop key={shop.id} index={index} env={env} onOpen={props.onOpen} />)}
+    {shops.map((shop, index) => <Shop key={shop.id} mobile={props.mobile} index={index} env={env} onOpen={props.onOpen} />)}
     {props.showIntro && !props.mobile && <Html center position={[-2.88,6.26,2.1]} zIndexRange={[28,21]}><button className="shop-peek" onClick={()=>props.onOpen('journal')}><strong>开发手记</strong><span>记录想法，连接灵感。</span><small>看看小镇的建造过程 →</small></button></Html>}
     <Character runtime={props.runtime} onNear={props.onNear} region={props.region} reduced={props.reduced} />
     <CameraRig runtime={props.runtime} mobile={props.mobile} reduced={props.reduced} />

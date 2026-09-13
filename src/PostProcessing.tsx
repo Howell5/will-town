@@ -1,3 +1,4 @@
+import { ContactOcclusion } from './ContactOcclusion'
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { NoBlending, Vector2 } from 'three'
@@ -14,7 +15,14 @@ export function PostProcessing({ glow, mobile }: { glow: number; mobile: boolean
   useEffect(() => {
     const composer = new EffectComposer(gl)
     const render = new RenderPass(scene, camera), alpha = new SavePass()
-    const bloom = new UnrealBloomPass(new Vector2(1, 1), .10, .25, 1.6)
+    const bloom = new UnrealBloomPass(new Vector2(1, 1), .16, .35, 1.25)
+    const ao = mobile ? null : new ContactOcclusion(scene,camera,1,1,16)
+    if(ao){
+      ao.kernelRadius=.28; ao.minDistance=.00012; ao.maxDistance=.006
+      ao.ssaoMaterial.defines.PERSPECTIVE_CAMERA=0
+      ao.ssaoMaterial.fragmentShader=ao.ssaoMaterial.fragmentShader.replace('1.0 - occlusion','1.0 - occlusion * 0.65')
+    }
+    const passes = [render,alpha,...(ao?[ao]:[]),bloom]
     const output = new OutputPass()
     // Preserve the original scene coverage. Bloom must not turn the transparent sky black.
     const finish = new ShaderPass({
@@ -24,13 +32,13 @@ export function PostProcessing({ glow, mobile }: { glow: number; mobile: boolean
     })
     finish.uniforms.sceneAlpha.value = alpha.renderTarget.texture
     finish.material.blending = NoBlending
-    for (const pass of [render, alpha, bloom, output, finish]) composer.addPass(pass)
+    for (const pass of [...passes, output, finish]) composer.addPass(pass)
     composer.setPixelRatio(mobile ? .85 : 1)
     composer.setSize(size.width, size.height)
     pipeline.current = { composer, bloom }
     return () => {
       pipeline.current = null
-      for (const pass of [render, alpha, bloom, output, finish]) pass.dispose()
+      for (const pass of [...passes, output, finish]) pass.dispose()
       composer.dispose()
     }
   }, [gl, scene, camera, mobile])
@@ -38,7 +46,7 @@ export function PostProcessing({ glow, mobile }: { glow: number; mobile: boolean
   useFrame((_, dt) => {
     if (import.meta.env.DEV) gl.domElement.dataset.composer = pipeline.current ? 'active' : 'fallback'
     if (!pipeline.current) { gl.render(scene, camera); return }
-    pipeline.current.bloom.strength = glow * (mobile ? .07 : .10)
+    pipeline.current.bloom.strength = glow * (mobile ? .10 : .16)
     pipeline.current.composer.render(dt)
   }, 1)
   return null

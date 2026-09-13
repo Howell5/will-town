@@ -17,3 +17,15 @@
 @media(min-width:761px) and (max-width:1050px){.introduction h1{font-size:48px}.introduction{max-width:650px}.intro-copy{font-size:14px}}
 @media(max-width:760px){.introduction h1{font-family:WillPixel,sans-serif;font-weight:400;font-size:36px;letter-spacing:0}.shop-sign{font-size:32px}}
 .interior-copy h2{text-wrap:balance}
+
+/* Match the selected reference composition; the scene remains a live 3D world. */
+@media(min-width:761px){
+.header{height:78px;padding:0 3.6%;background:#0e2045c9;border-color:#33467d;backdrop-filter:none}.brand{font-size:28px;font-weight:bold}.edition{display:none}.header nav{gap:48px}.header nav button{font-size:21px;letter-spacing:2px}.nav-dot{display:none}
+.introduction{left:3.6%;top:10.9%;max-width:800px}.introduction h1{font-size:clamp(42px,4.84vw,72px);line-height:1.19;margin-bottom:21px;text-shadow:2px 2px #182544;font-weight:400}.introduction h1 span{color:#ffc655}.intro-copy{font-size:clamp(14px,1.62vw,24px);line-height:1.65;letter-spacing:1.5px;margin-bottom:26px}.introduction .primary-button{font-size:25px;padding:15px 28px;background:#ffd064;border:2px solid #ffe29c;box-shadow:4px 4px #d3934b;gap:14px}.introduction .primary-button svg{width:28px;height:28px}.intro-actions{gap:15px}.intro-actions .text-button{font-size:20px;border-bottom:1px solid #e0d0a4;padding-bottom:5px}.tiny-note,.place-caption{display:none}.bottom-bar{background:transparent;border:0;backdrop-filter:none;min-height:55px;padding:8px 25px;opacity:.55}.bottom-bar:hover,.bottom-bar:focus-within{opacity:1}.bottom-bar .location,.bottom-bar .keyboard-hint{visibility:hidden}.is-exploring .keyboard-hint{visibility:visible}.time-button{background:#101c36dc}.preview-label{display:none}.sky-tint{opacity:.08}
+}
+
+.chalk-icon{display:block;width:70px;height:70px;color:#d8cedd}.chalk-icon svg{width:100%;height:100%}.shop-sign{font-size:37px;font-weight:bold;letter-spacing:1px}.portrait-sprite{background-image:url('/assets/sprites/will-pixel-v2.png')}
+
+@media(min-width:761px){.introduction h1{text-shadow:1px 0 currentColor,-1px 0 currentColor,0 1px currentColor,0 -1px currentColor,2px 3px #17294c}.intro-copy{margin-bottom:20px}.introduction .primary-button{padding-top:10px;padding-bottom:10px}.intro-actions{gap:12px}}
+
+.shop-peek{display:flex;flex-direction:column;gap:6px;width:207px;padding:12px 15px;border:2px solid #8db3b5;border-radius:3px;background:#102737f5;box-shadow:3px 3px 0 #162939a0;text-align:left;color:#ecf4df;font-size:16px;white-space:nowrap}.shop-peek strong{color:#a2e3cb;font-size:21px;letter-spacing:1px}.shop-peek small{color:#f6d48c;font-size:14px}.shop-peek:hover{background:#203d44;color:#fff}.shop-sign{display:flex;justify-content:center;align-items:center;gap:10px;font-family:Georgia,serif;font-weight:900;font-size:32px;letter-spacing:1px}.shop-sign svg{height:36px;width:36px}.header .brand{font-weight:700;text-shadow:1px 0 currentColor}.header{background:#102148f5}

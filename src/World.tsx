@@ -1,16 +1,19 @@
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { Html } from '@react-three/drei'
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { shops, type ShopId } from './content'
 import { environmentAt } from './environment'
 import { move, nearestShop, type WorldRuntime } from './movement'
 import { Shop, Terrain } from './Architecture'
+import { configureReferenceCamera, projectPoint } from './camera'
+import { Foreground } from './Foreground'
 import { PostProcessing } from './PostProcessing'
 
-type Props = { minutes: number; runtime: WorldRuntime; reduced: boolean; mobile: boolean; onOpen: (id: ShopId) => void; onNear: (id: ShopId | null) => void; onExplore: () => void; onReady: () => void; region: RefObject<HTMLDivElement | null> }
+type Props = { showIntro: boolean; minutes: number; runtime: WorldRuntime; reduced: boolean; mobile: boolean; onOpen: (id: ShopId) => void; onNear: (id: ShopId | null) => void; onExplore: () => void; onReady: () => void; region: RefObject<HTMLDivElement | null> }
 
 function Character({ runtime, onNear, region, reduced }: Pick<Props, 'runtime' | 'onNear' | 'region' | 'reduced'>) {
-  const source = useLoader(THREE.TextureLoader, '/assets/sprites/will-walk.png')
+  const source = useLoader(THREE.TextureLoader, '/assets/sprites/will-pixel-v2.png')
   const sprite = useRef<THREE.Sprite>(null)
   const shadow = useRef<THREE.Mesh>(null)
   const lastNear = useRef<ShopId | null>(null)
@@ -52,51 +55,42 @@ function Character({ runtime, onNear, region, reduced }: Pick<Props, 'runtime' |
   </>
 }
 
+// The desktop camera is locked to the selected 1487 × 1058 composition.
+// Resizing changes framing only, never yaw, pitch or roll.
 function CameraRig({ runtime, mobile, reduced }: Pick<Props, 'runtime' | 'mobile' | 'reduced'>) {
   const { camera, size } = useThree()
-  const focusX = useRef(mobile ? 1.1 : -2.3)
-  useEffect(() => {
-    if (camera instanceof THREE.OrthographicCamera) {
-      camera.zoom = mobile ? size.width / 10.6 : size.width / 20.5
-      camera.updateProjectionMatrix()
-    }
-  }, [camera, size.width, mobile])
+  const focusX = useRef(mobile ? 1.1 : -1.05)
   useFrame((_, dt) => {
-    const home = mobile ? 1.1 : -2.3
-    const deadZone = mobile ? 1.5 : 3.5
-    const diff = runtime.position.x - 1.1
-    const wanted = Math.abs(diff) > deadZone ? home + Math.sign(diff) * (Math.abs(diff) - deadZone) : home
-    focusX.current = THREE.MathUtils.damp(focusX.current, wanted, reduced ? 40 : 3, Math.min(dt, .05))
-    const targetY = mobile ? 2.5 : 3
-    camera.position.set(focusX.current + 4.3, targetY + 5.85, 16)
-    camera.lookAt(focusX.current, targetY, 1)
+    const wanted = mobile ? runtime.position.x : -1.05
+    focusX.current = mobile ? THREE.MathUtils.damp(focusX.current, wanted, reduced ? 40 : 4, Math.min(dt, .05)) : wanted
+    configureReferenceCamera(camera, size.width, size.height, mobile, focusX.current)
+    if (import.meta.env.DEV) {
+      const project = (x: number, y: number, z: number) => projectPoint(camera,size.width,size.height,[x,y,z])
+      camera.userData.landmarks = { feet: project(runtime.position.x,.1,runtime.position.z), doors: shops.map((s,i) => project(s.x,0,1.42+[-.35,.2,.7][i])), peaks: shops.map((s,i)=>project(s.x,[4.7,5.0,5.05][i]+1.15,1.42+[-.35,.2,.7][i])) }
+      document.querySelector('.world-region')?.setAttribute('data-camera', JSON.stringify(camera.userData.landmarks))
+    }
   })
   return null
-}
-
-function Clouds({ reduced }: { reduced: boolean }) {
-  const group = useRef<THREE.Group>(null)
-  useFrame((_, dt) => { if (group.current && !reduced) { group.current.position.x += Math.min(dt, .05) * .05; if (group.current.position.x > 12) group.current.position.x = -14 } })
-  return <group ref={group} position={[-9, 9, -9]}>
-    {[0, 1, 2].map(i => <mesh key={i} position={[i * .9, i === 1 ? .25 : 0, 0]}><boxGeometry args={[1.8, .35, .12]} /><meshBasicMaterial color="#d7c5cf" transparent opacity={.18} depthWrite={false} /></mesh>)}
-  </group>
 }
 
 function Scene(props: Props) {
   const env = environmentAt(props.minutes)
   useEffect(() => { props.onReady() }, [props.onReady])
   return <>
-    <ambientLight color="#a0b3e3" intensity={env.ambient * .56} />
+    <ambientLight color="#a0b3e3" intensity={env.ambient * .85} />
     <hemisphereLight args={['#849acb', '#464153', .3]} />
     <directionalLight position={[-Math.cos(env.sunAngle) * 10, Math.max(2, Math.sin(env.sunAngle) * 12), 6]} color={env.sunlight} intensity={env.daylight} castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-12} shadow-camera-right={12} shadow-camera-top={10} shadow-camera-bottom={-8} shadow-normalBias={.025} shadow-bias={-.0001} />
+    <directionalLight position={[-6, 12, 10]} color="#f4c491" intensity={.60 + env.daylight * .3} />
     <directionalLight position={[0, 8, -7]} color="#638ee7" intensity={.85} />
-    <Terrain env={env} onWalk={point => { props.runtime.target = { x: Math.max(-7, Math.min(8, point.x)), z: Math.max(1.65, Math.min(6.1, point.z)) }; props.onExplore() }} />
+    <Terrain env={env} onWalk={point => { props.runtime.target = { x: Math.max(-7, Math.min(8, point.x)), z: Math.max(1.65, Math.min(8.9, point.z)) }; props.onExplore() }} />
     {shops.map((shop, index) => <Shop key={shop.id} index={index} env={env} onOpen={props.onOpen} />)}
+    {props.showIntro && !props.mobile && <Html center position={[-2.88,6.26,2.1]} zIndexRange={[28,21]}><button className="shop-peek" onClick={()=>props.onOpen('journal')}><strong>开发手记</strong><span>记录想法，连接灵感。</span><small>看看小镇的建造过程 →</small></button></Html>}
     <Character runtime={props.runtime} onNear={props.onNear} region={props.region} reduced={props.reduced} />
     <CameraRig runtime={props.runtime} mobile={props.mobile} reduced={props.reduced} />
-    <Clouds reduced={props.reduced} />
+
+    <Foreground mobile={props.mobile} />
     <PostProcessing glow={env.windows} mobile={props.mobile} />
-    {env.daylight > .15 && <mesh position={[-Math.cos(env.sunAngle) * 10 - 4, 7 + Math.sin(env.sunAngle) * 3, -12]}><sphereGeometry args={[.4, 12, 8]} /><meshBasicMaterial color="#f8d4a0" /></mesh>}
+
   </>
 }
 

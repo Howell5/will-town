@@ -33,8 +33,8 @@ describe('walking and entrances', () => {
     expect(nearestShop({ x: 1.1, z: 5 })).toBeNull()
   })
   it('blocks the bench while allowing movement along its edge', () => {
-    const p = move({ x: -4.8, z: 5.04 }, 1, 1, .05)
-    expect(p.z).toBe(5.04)
-    expect(p.x).toBeGreaterThan(-4.8)
+    const p = move({ x: -1.3, z: 7.79 }, 1, 1, .05)
+    expect(p.z).toBe(7.79)
+    expect(p.x).toBeGreaterThan(-1.3)
   })
 })

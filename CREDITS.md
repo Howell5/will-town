@@ -33,3 +33,10 @@ Berryon 为用户指定的真实产品。介绍依据 2026-09-13 读取的 [berr
 ## 后续第三方素材记录
 
 采用素材后记录资产名、作者、来源 URL、许可及版本、原始许可文件、实际采用的文件和修改内容。
+
+## 参考图镜头校准版新增素材
+
+- `public/assets/backgrounds/reference-dusk-v2.png`：根据选定概念图生成的远景，删除 UI 和前景建筑，仅用于实际三维场景背后。提示词：`assets/source/materials/reference-dusk-v2.md`。
+- `public/assets/sprites/will-pixel-v2.png`：新四向像素步行动画，1254 × 1254 RGBA；修正生成的伪透明背景后验证了真实 alpha。提示词及修正：`assets/source/materials/will-pixel-v2.md`。
+- `public/assets/backgrounds/foreground-canopy-keyed.png`：前景树叶框景，用运行时着色器去除洋红底色。提示词与实际像素范围：`assets/source/materials/foreground-canopy-keyed.md`。先前棋盘格候选没有投入运行，也没有复制进公开仓库。
+- 上述原始 PNG 未经位图重绘或裁切。房子、门窗、屋瓦、路面和岸墙仍是 Three.js 几何场景；没有把整张效果图作为交互场景替身。

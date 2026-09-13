@@ -2,6 +2,8 @@
 
 一个人，慢慢建起一条街。
 
+**在线体验：[will-town.haruhowell.workers.dev](https://will-town.haruhowell.workers.dev)**
+
 以像素小镇呈现独立开发者的产品：每家店代表一个产品，访客可以直接点击店铺，也可以控制像素分身沿街探索。天空与灯光跟随设备当地时间变化。
 
 **当前状态：材质与灯光细化版，完整美术验收未通过。** 锁定桌面镜头，按参考图校准门槛、屋顶和角色位置；改为水平路面、斜向延伸的实体岸墙、更高的店面和修长像素角色。保留 Will 像素角色、Berryon 产品入口及设备当地时间的昼夜变化。视觉质量优先于新增玩法。
@@ -48,6 +50,8 @@ pnpm deploy:cloudflare
 ```
 
 命令会重新构建并上传静态产物；公开地址以 Wrangler 成功部署时的输出为准。单页导航由 Cloudflare 返回 `index.html`，无需数据库或运行时密钥。原始参考附件和源码不会作为部署目录上传。
+
+当前已通过官方 Cloudflare MCP 和 Static Assets 直传 API 发布到上述地址，Worker 名为 `will-town`。MCP 授权与本机 Wrangler 登录独立；使用命令行更新时仍需有效的 Wrangler 登录。
 
 ## 操作
 

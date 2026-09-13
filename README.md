@@ -37,7 +37,17 @@ pnpm build
 pnpm test:sites
 ```
 
-构建输出位于 `dist/client/`。仓库保留了可选 Sites 部署结构，目前没有部署公开网站。
+构建输出位于 `dist/client/`。仓库保留了可选 Sites 部署结构。
+
+## Cloudflare 部署
+
+使用 Workers Static Assets 发布 `dist/client/`，配置位于 `wrangler.jsonc`。初次部署前通过 `pnpm exec wrangler login` 登录目标 Cloudflare 账户，再执行：
+
+```sh
+pnpm deploy:cloudflare
+```
+
+命令会重新构建并上传静态产物；公开地址以 Wrangler 成功部署时的输出为准。单页导航由 Cloudflare 返回 `index.html`，无需数据库或运行时密钥。原始参考附件和源码不会作为部署目录上传。
 
 ## 操作
 

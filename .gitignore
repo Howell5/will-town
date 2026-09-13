@@ -11,3 +11,6 @@ test-results/
 !.env.example
 .bootstrap/
 artifacts/
+.wrangler/
+.dev.vars
+.dev.vars.*

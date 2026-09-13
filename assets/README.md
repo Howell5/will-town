@@ -1,6 +1,6 @@
 # 素材制作与管理
 
-状态：目录与制作规则已建立；当前仅有 docs/references/town-concept.png 概念参考，尚未导入第三方素材或制作运行素材。
+状态：首批运行素材已生成并接入样片。采用真实三维建筑模块、生成材质图集、透明角色和植物图集，以及像素远景。第三方视觉依赖目前为字体与 UI 图标，未导入候选游戏资源包。
 
 ## 采用混合制作
 
@@ -42,6 +42,13 @@ AI 图像生成适合概念图、静态元素与贴图候选。生成的像素�
 | 标识 | 文件 | 来源 | 状态 |
 | --- | --- | --- | --- |
 | town-concept | docs/references/town-concept.png | 本项目对话中的 AI 生成概念图 | 已选视觉参考；不是运行资产 |
+| will-walk | public/assets/sprites/will-walk.png | 基于用户形象的内置 ImageGen 生成 | 已接入四方向走路；脚底锚点与 alphaTest 见源记录 |
+| greenery | public/assets/sprites/greenery.png | 内置 ImageGen 生成 | 已接入；以 y=560 分隔原图上下两行 |
+| town-materials | public/assets/textures/town-materials.png | 内置 ImageGen 生成 | 石墙、屋瓦、地面、木板四象限，UV 内缩避免串色 |
+| distant-town | public/assets/backgrounds/distant-town.png | 内置 ImageGen 生成 | 已接入远景，运行时按时段染色 |
+| fusion-pixel | public/assets/fonts/fusion-pixel-12px-zh-hans.woff2 | TakWolf Fusion Pixel Font 2026.09.01 | 本地中文像素字体，保留原始 OFL 与组成字体许可 |
+
+每项生成素材的实际提示词与局限记录在 assets/source/ 下。原始生成图保留不改，图集切分通过运行时 UV 完成。全部生成工作采用内置图像工具。
 
 ## 第一批最小素材集
 

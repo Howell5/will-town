@@ -2,7 +2,9 @@
 
 ## Approved project direction
 
-Will Town is an explorable Three.js pixel town for an independent developer, with products represented as shops. Use a small, close street view before expanding into a district. Keep warm windows and legible shop entrances. The first real product is https://berryon.ai. Will's character has short black hair, blue goggles and a black shirt.
+Will Town is a Three.js pixel streetscape for an independent developer, with products represented as shops. Use a small, close street view before expanding into a district. Keep warm windows and legible shop entrances. The first real product is https://berryon.ai.
+
+2026-09-14: The user explicitly removed characters and walking to prioritize visual quality. Do not reintroduce avatars, WASD/arrow movement, ground navigation, proximity triggers, collision handling, touch movement pads or camera following. Keep fixed framing and direct shop/product interactions. Concentrate future visual work on architecture, material relief, localized warm lighting and restrained atmospheric motion. Character assets are retired under assets/source/avatar/retired, outside deployed assets. This supersedes the older exploration and character-related notes below.
 
 Visual quality is the first acceptance criterion. The user rejected the initial floating slab and coarse repeated building shells. Ground must read as continuous solid land with substantial stone retaining walls, connected steps and terrain below. Use the original concept and Octopath Traveler screenshots to guide real architectural depth, detailed roof silhouettes, recessed windows, shop displays, shadows and atmospheric depth. Working animation does not compensate for weak visuals.
 

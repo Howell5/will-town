@@ -232,7 +232,7 @@ export function Shop({ index, env, onOpen, mobile }: { index: number; env: Env; 
   </group></group>
 }
 
-export function Terrain({ env, onWalk }: { env: Env; onWalk: (p: THREE.Vector3) => void }) {
+export function Terrain({ env }: { env: Env }) {
   const stones = useMemo(() => {
     const list: Block[] = []
     // Broad continuous upper street; coarser visible pavers with actual relief.
@@ -268,7 +268,6 @@ export function Terrain({ env, onWalk }: { env: Env; onWalk: (p: THREE.Vector3) 
     <Solid p={[0,-5.3,13]} s={[40,5,14]} c="#424a55" />
     <Blocks items={stones} /><Blocks items={caps} />
     {[-6.25,-3.75,-1.25,1.25,3.75,6.25,8.75].map(x=><group key={x}><Solid p={[x,.58,streetEdge(x)]} r={[0,-Math.atan(.5),0]} s={[2.57,.09,.12]} c="#555454" /><Solid p={[x,.34,streetEdge(x)]} r={[0,-Math.atan(.5),0]} s={[2.57,.07,.10]} c="#555454" /></group>)}
-    <mesh rotation={[-Math.PI/2,0,0]} position={[.5,.045,5.1]} onClick={e=>{e.stopPropagation();onWalk(e.point)}}><planeGeometry args={[15.8,8.0]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} /></mesh>
     <Lantern position={[-6.0,.04,2.4]} env={env} /><Lantern position={[7.5,2.35,.25]} env={env} />
 
     <Greenery position={[-4.5,.05,8.8]} size={1.15} kind={2} /><Greenery position={[4.0,.05,8.8]} size={1.0} kind={2} />

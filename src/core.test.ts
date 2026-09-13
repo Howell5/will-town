@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { environmentAt, localMinutes, phaseName, wrapMinutes } from './environment'
-import { bounds, move, nearestShop } from './movement'
 
 describe('a local day', () => {
   it('uses device wall-clock time', () => expect(localMinutes(new Date(2026, 8, 13, 18, 30, 0))).toBe(1110))
@@ -18,23 +17,5 @@ describe('a local day', () => {
     }
     expect(phaseName(1110)).toBe('黄昏')
     expect(phaseName(1300)).toBe('夜晚')
-  })
-})
-describe('walking and entrances', () => {
-  it('normalizes diagonal walking', () => {
-    const a = move({ x: 0, z: 3 }, 1, 0, .02), b = move({ x: 0, z: 3 }, 1, 1, .02)
-    expect(Math.hypot(a.x, a.z - 3)).toBeCloseTo(Math.hypot(b.x, b.z - 3))
-  })
-  it('cannot pass the shopfront or plaza edge', () => {
-    expect(move({ x: bounds.maxX, z: bounds.minZ }, 1, -1, 10)).toEqual({ x: bounds.maxX, z: bounds.minZ })
-  })
-  it('offers E only within reach of a real entrance', () => {
-    expect(nearestShop({ x: 1.1, z: 2.3 })).toBe('berryon')
-    expect(nearestShop({ x: 1.1, z: 5 })).toBeNull()
-  })
-  it('blocks the bench while allowing movement along its edge', () => {
-    const p = move({ x: -1.3, z: 7.79 }, 1, 1, .05)
-    expect(p.z).toBe(7.79)
-    expect(p.x).toBeGreaterThan(-1.3)
   })
 })

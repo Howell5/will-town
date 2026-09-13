@@ -2,7 +2,7 @@
 
 Generated 2026-09-13 with the built-in image generation tool using the user's supplied stylized avatar portrait as an identity reference. No third-party sprite assets were used.
 
-Runtime file: `public/assets/sprites/will-walk.png`.
+Retired 2026-09-14: the user removed all characters and walking. Archived file: `retired/will-walk.png`. No character atlas is deployed or loaded at runtime.
 
 ## Verified properties
 

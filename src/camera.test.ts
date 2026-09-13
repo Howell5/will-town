@@ -7,14 +7,13 @@ const cameraAt = (w: number, h: number) => {
   configureReferenceCamera(c, w, h, false)
   return c
 }
-it('keeps measured entrance, roof and character anchors within 25px of the reference', () => {
+it('keeps measured entrance and roof anchors within 25px of the reference', () => {
   const c = cameraAt(1487, 1058)
   const anchors: { world: [number,number,number]; screen: [number,number] }[] = [
     { world:[1.1,0,1.62], screen:[922,848] },
     { world:[1.1,6.15,1.62], screen:[922,378] },
     { world:[4.7,0,2.12], screen:[1200,882] },
     { world:[4.7,6.20,2.12], screen:[1195,406] },
-    { world:[-.1,.1,2.9], screen:[816,864] },
   ]
   for(const a of anchors){
     const actual = projectPoint(c,1487,1058,a.world)

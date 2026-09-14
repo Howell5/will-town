@@ -1,63 +1,14 @@
-# 素材制作与管理
+# 素材管理
 
-状态：首批运行素材已生成并接入样片。采用真实三维建筑模块、生成材质图集、透明角色和植物图集，以及像素远景。第三方视觉依赖目前为字体与 UI 图标，未导入候选游戏资源包。
+## 当前运行素材
 
-## 采用混合制作
+- public/assets/streetscape/street-dusk-v2.png：用户确认稿衍生的无网页 UI 街景，1487 × 1058。内置 ImageGen 编辑，保留实体店招，去除人物与网页文案。
+- public/assets/fonts/：中文像素字体，许可见 licenses/fusion-pixel。
 
-| 素材 | 首选方式 | 入场景前的处理 |
-| --- | --- | --- |
-| 地砖、墙面、屋顶、花草等基础元素 | 从许可明确、视角一致的素材中选一套基础资源，必要时定制 | 统一纹理密度、色板、比例，检查纹理接缝 |
-| 建筑体块、地面、台阶 | 可复用的简单 3D 模块或许可合适的模型 | 确认尺度、遮挡、碰撞区、UV 和日夜受光 |
-| 店铺门面、招牌、产品陈列 | 定制制作，AI 辅助探索和生成贴图 | 分层、去除不适合昼夜变化的固定光影，真实文字与 Logo 单独排版 |
-| 像素分身 | 定制角色定稿，再制作少量方向与动作帧 | 对齐脚底、画布、比例与轮廓，逐帧检查播放稳定性 |
-| 远景、天空装饰 | AI 生成或定制分层图片 | 区分不可行走远景与真实 3D 前景；避免把固定夕阳画进全天背景 |
-| 音效、字体 | 另选许可明确的资源 | 分别记录来源，音效可推迟到核心交互完成后 |
+生成方式、精确提示词、参考与已知变化见 assets/source/prerendered/。已确认整页画面为 docs/design/street-approval-v1.png；图片是预渲染美术，交互和网页文字由代码提供。
 
-AI 图像生成适合概念图、静态元素与贴图候选。生成的像素风图片不必然符合严格像素网格；角色多方向与动画帧也不保证自然一致，需要返工和实际播放检查。图像生成不直接产出可用的 GLB 模型、UV、绑定或碰撞体。
+未选 v1 放在 assets/source/prerendered，旧实时纹理/远景/植物放在 assets/source/retired-realtime；人物素材放在 assets/source/avatar/retired。它们不随网站部署。原始个人头像附件不入公开仓库。生成资产未声明为 CC0。
 
-主体建筑与地形需要真正的几何结构；远处不可进入的建筑可以用图片层节省制作量。商品文字和店招尽量用真实文字或用户提供的产品 Logo，保证清楚准确。
+以后引入第三方素材时逐项核验再分发条件，在 CREDITS.md 记录作者、来源、许可和修改。保留原始许可。只把实际采用的成品放进 public/assets，候选和提示词留在 assets/source。
 
-## 先定一套素材规范
-
-在一家店的样片中确定镜头角度、人物尺寸、纹理像素密度、地面单位与主色板，再批量制作。不要把不同俯视角、不同颗粒大小、不同光照方向的素材直接混在一起。
-
-暂定角色画布 32 × 48 像素、四方向、每方向 4 帧走路；这是待样片验证的起点，可根据屏幕阅读效果调整。站立先复用选定帧。透明边缘、脚底锚点和相邻帧轮廓须一致。
-
-纹理保持基础色，太阳光由场景提供；窗户发光与窗框分开控制。像素素材以 PNG 保留清晰边缘，模型优先导出 GLB；具体分辨率和压缩在真实场景中确认。
-
-## 目录职责
-
-- docs/references/：选定的构图与氛围参考，不作为运行场景直接加载。
-- assets/source/：许可允许入库的原始资源、生成候选与可编辑源文件；按素材包或对象归档。
-- public/assets/：整理并验证过的运行资源，按 sprites、textures、models、backgrounds、audio 分类逐步增加。
-- licenses/：已导入第三方素材的原始许可文本。
-- CREDITS.md：可公开的作者、来源、许可与修改说明。
-
-网站只加载 public/assets 中选定的成品。失败候选与未选原图不随网站发布；大型源文件数量增长后再评估 Git LFS。禁止把公开仓库当作任意付费素材包的备份：采用第三方素材前要确认公开再分发条件。
-
-## 素材记录
-
-每项正式采用的素材需记录：标识、用途、来源类别（第三方 / AI 辅助 / 项目自制）、原始文件、导出文件、作者或生成工具、来源 URL、许可、修改内容、尺寸或模型尺度，以及参考 / 候选 / 已验收状态。AI 辅助素材还记录实际提示词与参考图，以便后续保持一致。
-
-| 标识 | 文件 | 来源 | 状态 |
-| --- | --- | --- | --- |
-| town-concept | docs/references/town-concept.png | 本项目对话中的 AI 生成概念图 | 已选视觉参考；不是运行资产 |
-| will-walk | public/assets/sprites/will-walk.png | 基于用户形象的内置 ImageGen 生成 | 已接入四方向走路；脚底锚点与 alphaTest 见源记录 |
-| greenery | public/assets/sprites/greenery.png | 内置 ImageGen 生成 | 已接入；以 y=560 分隔原图上下两行 |
-| town-materials | public/assets/textures/town-materials.png | 内置 ImageGen 生成 | 石墙、屋瓦、地面、木板四象限，UV 内缩避免串色 |
-| distant-town | public/assets/backgrounds/distant-town.png | 内置 ImageGen 生成 | 已接入远景，运行时按时段染色 |
-| fusion-pixel | public/assets/fonts/fusion-pixel-12px-zh-hans.woff2 | TakWolf Fusion Pixel Font 2026.09.01 | 本地中文像素字体，保留原始 OFL 与组成字体许可 |
-
-每项生成素材的实际提示词与局限记录在 assets/source/ 下。原始生成图保留不改，图集切分通过运行时 UV 完成。全部生成工作采用内置图像工具。
-
-## 第一批最小素材集
-
-先准备一个可复用店铺结构、一组墙面 / 屋顶 / 地面纹理、一个招牌、一盏路灯、少量植物、一个角色动作集与一组远景 / 云层。验证一家店后，复用结构并改变门面、招牌、配色和陈列，扩成三个有区别的店铺。
-
-## 已核对的候选来源
-
-2026-09-13 核对页面信息，以下仅为候选，尚未下载或采用：
-
-- [Kenney Tiny Town](https://kenney.nl/assets/tiny-town)：页面标明 16 × 16、2D、CC0。可以评估基础像素元素，但该规格并不代表能直接匹配当前 HD-2D 概念图。
-- [Kenney Voxel Kit](https://kenney.nl/assets/voxel-kit)：页面标明 3D、CC0。体素风与已选的细颗粒像素风有区别，不默认混用。
-- [OpenGameArt](https://opengameart.org/content/faq)：逐项检查下载素材的许可和署名要求，不能把整个站点当作同一种许可；预览图不默认等同于可下载素材的授权。
+像素叶片标志：`public/assets/streetscape/leaf-mark.png`，内置 ImageGen 基于已确认稿生成，网页通过 CSS 裁切显示；来源与提示词见 `assets/source/prerendered/leaf-mark.md`。

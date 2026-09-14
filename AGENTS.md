@@ -1,27 +1,15 @@
-# Prototype Instructions
+# Will Town project instructions
 
-## Approved project direction
+## Current approved direction — 2026-09-14
 
-2026-09-14, latest decision: the user approved changing to a fixed-camera pre-rendered/layered streetscape with HTML product interactions and restrained local animation. First deliver a complete reference-faithful visual with no human character and real product storefronts for user review, then integrate the approved artwork. This explicitly supersedes the older requirement that the foreground remain entirely real-time 3D. Do not claim a generated picture is a finished interactive website, or claim exact pixel-for-pixel fidelity.
+The user approved `docs/design/street-approval-v1.png`, then authorized implementing and publishing it. Use a fixed pre-rendered streetscape with real HTML navigation and storefront hotspots. This supersedes the earlier realtime Three.js architecture. Visual composition, solid connected stone embankment, close storefront view, roof detail and localized amber lighting are the acceptance criteria. Do not claim exact pixel-for-pixel fidelity or a numerical similarity score.
 
-Will Town is a Three.js pixel streetscape for an independent developer, with products represented as shops. Use a small, close street view before expanding into a district. Keep warm windows and legible shop entrances. The first real product is https://berryon.ai.
+No humans, avatars, walking, collisions, movement controls, proximity triggers, camera rotation or following. The orange cat in the approved artwork stays. No weather APIs, geolocation permissions or physically accurate sun claims. Device-local time may subtly modulate scene brightness while preserving the approved dusk palette.
 
-2026-09-14: The user explicitly removed characters and walking to prioritize visual quality. Do not reintroduce avatars, WASD/arrow movement, ground navigation, proximity triggers, collision handling, touch movement pads or camera following. Keep fixed framing and direct shop/product interactions. Concentrate future visual work on architecture, material relief, localized warm lighting and restrained atmospheric motion. Character assets are retired under assets/source/avatar/retired, outside deployed assets. This supersedes the older exploration and character-related notes below.
+The first real product is https://berryon.ai. Keep a directly accessible HTML product directory and native dialog interactions. Source image lettering is physical signage; navigation, hero copy and actions must be actual selectable HTML, not baked UI.
 
-Visual quality is the first acceptance criterion. The user rejected the initial floating slab and coarse repeated building shells. Ground must read as continuous solid land with substantial stone retaining walls, connected steps and terrain below. Use the original concept and Octopath Traveler screenshots to guide real architectural depth, detailed roof silhouettes, recessed windows, shop displays, shadows and atmospheric depth. Working animation does not compensate for weak visuals.
+Use ego-browser / ego-lite for actual browser QA. Compare approved artwork and real implementation at 1487 × 1058, DPR 1, 18:30 preview, including focused typography and storefront regions. Check responsive layouts and direct product access. Keep generated asset prompts and provenance in assets/source; ship only selected assets in public/assets. Do not publish the original personal portrait attachment.
 
-Use browser local time for an approximate sunny day cycle; do not add location permissions, weather services, rain or snow. Support direct HTML product access alongside optional keyboard/touch exploration. Keep source prompts and asset provenance separate from runtime assets. The public repository is Howell5/will-town; do not publish the original personal reference attachment.
+Repository: Howell5/will-town. Existing authorized hosting: https://will-town.haruhowell.workers.dev, Cloudflare Worker will-town. Preserve `.openai/hosting.json`, `worker/index.js`, `scripts/prepare-sites-build.mjs` and `tests/sites-worker.test.mjs` for optional handoff compatibility. `pnpm build` must leave dist/client/index.html, dist/server/index.js and dist/.openai/hosting.json. Deploy only dist/client.
 
-Run the local server yourself and open the preview in the browser available to this environment. Do not give the user server-start instructions when you can run it.
-
-The user explicitly prefers ego-lite / ego-browser for actual browser validation and debugging. Use its skill and CLI task space; favor semantic snapshots and compact state checks, taking screenshots for visual inspection.
-
-Before making substantial visual changes, use the Product Design plugin's `get-context` skill when the visual source is unclear or no longer matches the current goal. When the user gives durable prototype-specific design feedback, preferences, or decisions, record them in `AGENTS.md`.
-
-When implementing from a selected generated mock, treat that image as the source of truth for layout, component anatomy, density, spacing, color, typography, visible content, and hierarchy.
-
-Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts/prepare-sites-build.mjs`, and `tests/sites-worker.test.mjs` intact so the same local prototype can be handed to Sites. Before a Sites handoff, run `npm run build` and `npm run test:sites`; the build must leave `dist/client/index.html`, `dist/server/index.js`, and `dist/.openai/hosting.json`.
-
-The user requires the selected reference camera/composition to match, allowing only small modeling differences. Treat roof peaks, shop thresholds, character feet, and retaining-wall edges as measured screen-space anchors at 1487 × 1058. Lock desktop camera yaw/pitch/roll; movement must not drift the desktop composition. Do not claim 90% visual similarity without evidence. The image must never replace the interactive 3D foreground.
-
-For material/light refinements, retain the calibrated camera. Make roof overlap, masonry edges and wood surfaces readable at the final viewport, avoid dense random shader noise, and verify midday readability as well as warm dusk/night lighting. ContactOcclusion caches the static opaque town; invalidate it if future opaque geometry animates.
+Run typecheck, unit tests, build and Sites packaging tests at meaningful milestones. Run the local preview yourself. Keep prior realtime assets under assets/source/retired-realtime, not public. Earlier design experiments are historical; current instructions and README take precedence.

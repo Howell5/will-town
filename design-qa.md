@@ -37,3 +37,7 @@ final result: passed
 ## Remaining limits
 
 P3: exact generated headline lettering and minute image-edit details differ. No supplied mobile art for fidelity comparison; emulated viewports only. Time modulates brightness subtly and preserves the dusk artwork; it does not synthesize a physically accurate daytime sky. The art is pre-rendered, while text and actions are actual web elements. Historical realtime QA remains in docs/qa/realtime-design-qa.md.
+
+## Published verification
+
+Cloudflare Worker will-town deployment e21470451bb94368a0c8fee5787be3a3, 2026-09-14. https://will-town.haruhowell.workers.dev/ loaded the current index-_rDmWumV.js bundle and street-dusk-v2.png. Production desktop and 390 px mobile opened Berryon correctly; image ready, local font loaded, no canvas runtime, zero observed browser errors. Actual hosted screenshot: docs/qa/prerendered-production.png. Source commit: 7c2c5cb.

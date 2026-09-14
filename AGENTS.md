@@ -2,6 +2,8 @@
 
 ## Approved project direction
 
+2026-09-14, latest decision: the user approved changing to a fixed-camera pre-rendered/layered streetscape with HTML product interactions and restrained local animation. First deliver a complete reference-faithful visual with no human character and real product storefronts for user review, then integrate the approved artwork. This explicitly supersedes the older requirement that the foreground remain entirely real-time 3D. Do not claim a generated picture is a finished interactive website, or claim exact pixel-for-pixel fidelity.
+
 Will Town is a Three.js pixel streetscape for an independent developer, with products represented as shops. Use a small, close street view before expanding into a district. Keep warm windows and legible shop entrances. The first real product is https://berryon.ai.
 
 2026-09-14: The user explicitly removed characters and walking to prioritize visual quality. Do not reintroduce avatars, WASD/arrow movement, ground navigation, proximity triggers, collision handling, touch movement pads or camera following. Keep fixed framing and direct shop/product interactions. Concentrate future visual work on architecture, material relief, localized warm lighting and restrained atmospheric motion. Character assets are retired under assets/source/avatar/retired, outside deployed assets. This supersedes the older exploration and character-related notes below.
